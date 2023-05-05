@@ -1,4 +1,8 @@
-Guidelines how to download rickandmorty application.
+
+
+The Rick and Morty API
+
+Guidelines for installation of rickandmorty application.
 
 1. Create a new directory for the repository: 
 mkdir my-repo
