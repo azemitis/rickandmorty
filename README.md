@@ -15,7 +15,7 @@ Guidelines for installation of rickandmorty application.
 
    git clone -b v1 https://github.com/azemitis/rickandmorty.git
 
-4. navigate to folder rickandmorty:
+4. Navigate to folder rickandmorty:
 
    cd rickandmorty
 
@@ -27,6 +27,6 @@ Guidelines for installation of rickandmorty application.
 
    phpstorm .
 
-8. launch localhost:
+8. Launch localhost:
 
    php -S localhost:8000
