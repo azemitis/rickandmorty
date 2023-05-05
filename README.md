@@ -15,10 +15,18 @@ Guidelines for installation of rickandmorty application.
 
    git clone -b v1 https://github.com/azemitis/rickandmorty.git
 
-4. Install dependencies:
+4. navigate to folder rickandmorty:
+
+   cd rickandmorty
+
+6. Install dependencies:
 
    composer install
 
-5. Launch the application:
+6. Open phpstorm:
+
+   phpstorm .
+
+8. launch localhost:
 
    php -S localhost:8000
