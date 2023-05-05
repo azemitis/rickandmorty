@@ -23,7 +23,7 @@ Guidelines for installation of rickandmorty application.
 
    composer install
 
-6. Open phpstorm:
+6. Open application in Phpstorm:
 
    phpstorm .
 
