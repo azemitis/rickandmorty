@@ -13,7 +13,7 @@ Guidelines for installation of rickandmorty application.
 
 3. Clone the repository: 
 
-   git clone https://github.com/azemitis/rickandmorty.git
+   git clone -b v1 https://github.com/azemitis/rickandmorty.git
 
 4. Install dependencies:
 
