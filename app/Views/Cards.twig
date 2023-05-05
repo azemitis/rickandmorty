@@ -1,0 +1,39 @@
+
+{% extends 'layout.twig' %}
+
+{% block content %}
+
+    <ul>
+            <div class="grid grid-cols-2 gap-6 justify-items-center bg-gray-800 pt-20">
+                {% for character in characters %}
+                    <div class="max-w-md w-full lg:max-w-full lg:flex pl-4">
+                        <div class="w-96 h-54 lg:h-auto lg:w-64 flex-none bg-cover rounded-tl rounded-bl
+                        text-center overflow-hidden shadow-lg"
+                             style="background-image: url('{{ character.image }}')">
+                        </div>
+                        <div class="bg-gray-700 w-96 h-54
+                        rounded-tr rounded-br p-4 flex
+                        flex-col justify-between leading-normal shadow-lg">
+                            <div class="mb-8">
+                                <a href="/character/{{ character.id }}"
+                                   target="_blank" class="text-2xl text-white font-bold">{{ character.title }}</a>
+                                <ul class="text-l text-white"><span class="status_icon {{ character.status|lower }}"
+                                          {% if character.status == 'Alive' %}style="background-color: green;"
+                                          {% elseif character.status == 'Dead' %}style="background-color: red;"
+                                            {% endif %}></span>  {{ character.status }} - {{ character.species }}</ul>
+                                <ul class="text-gray-400"> Last known location:</ul>
+                                <a href="/location/{{ character.location_id }}"
+                                   target="_blank" class="text-xl text-white">
+                                    {{ character.last_known_location }}</a>
+                                <ul class="text-gray-400"> First seen in:</ul>
+                                <a href="/episode/{{ character.first_seen_id }}"
+                                   target="_blank" class="text-xl text-white">
+                                    {{ character.first_seen_in }}</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+    </ul>
+
+{% endblock %}

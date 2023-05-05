@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Rick and Morty API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status_icon {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .alive {
+            background-color: green;
+        }
+
+        .dead {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="flex pt-20 pb-10 items-center justify-center">
+    <div class="bg-white p-8 rounded-lg" style="height: 25vh;">
+        <h1 class="text-8xl text-gray-700 font-bold text-center">The Rick and Morty API</h1>
+    </div>
+</div>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>
