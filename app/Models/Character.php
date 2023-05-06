@@ -4,7 +4,7 @@ namespace App\Models;
 
 use GuzzleHttp\Client;
 
-class Rick
+class Character
 {
     private Client $client;
 
@@ -13,7 +13,7 @@ class Rick
         $this->client = new Client();
     }
 
-    public function getRicks(): array
+    public function getCharacters(): array
     {
         $url = 'https://rickandmortyapi.com/api/character/';
 

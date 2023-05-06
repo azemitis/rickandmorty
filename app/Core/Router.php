@@ -9,8 +9,7 @@ class Router
     public static function run(array $routes)
     {
         $dispatcher = \FastRoute\simpleDispatcher(function (RouteCollector $router) use ($routes) {
-            foreach ($routes as $route)
-            {
+            foreach ($routes as $route) {
                 [$httpMethod, $url, $handler] = $route;
                 $router->addRoute($httpMethod, $url, $handler);
             }
@@ -31,10 +30,16 @@ class Router
                 [$class, $method] = $handler;
 
                 $controller = new $class();
-                $loader = new \Twig\Loader\FilesystemLoader('App/Views');
+                $loader = new \Twig\Loader\FilesystemLoader('../App/Views');
                 $twig = new \Twig\Environment($loader);
 
-                return $controller->$method($vars, $twig);
+                $view = $controller->$method($vars, $twig);
+
+                $template = $twig->load($view->getTemplate() . '.twig');
+                return $template->render($view->getData());
         }
+
+        return null;
+
     }
 }

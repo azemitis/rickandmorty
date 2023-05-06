@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Core\Router;
 
-$routes = require_once 'routes.php';
+$routes = require_once __DIR__ . '/../routes.php';
 
 $result = Router::run($routes);
 
