@@ -34,6 +34,6 @@ class View
     public function render(Environment $twig): string
     {
         $template = $twig->load($this->template . '.twig');
-        return $template->render($this->data);
+        return $template->render(array_merge($this->data, ['firstSeenIn' => $this->firstSeenIn]));
     }
 }
