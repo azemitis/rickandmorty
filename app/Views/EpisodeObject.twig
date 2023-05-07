@@ -1,0 +1,13 @@
+{% block content %}
+    <pre>
+            "ID": {{ data.getID()|json_encode(constant('JSON_PRETTY_PRINT')) }},
+            "name": {{ data.getName()|json_encode(constant('JSON_PRETTY_PRINT')) }},
+            "airDate": {{ data.getAirDate()|json_encode(constant('JSON_PRETTY_PRINT')) }},
+            "episode": {{ data.getEpisode()|json_encode(constant('JSON_PRETTY_PRINT')) }},
+            "characters":
+                {% for character in data.getCharacters() %}
+                    "<a href='{{ character }}'>{{ character }}</a>"
+                {% endfor %}
+    </pre>
+{% endblock %}
+

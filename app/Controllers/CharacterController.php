@@ -28,7 +28,6 @@ class CharacterController
     }
 
 
-
     public function characterJson(array $vars, Environment $twig): View
     {
         $id = $vars['id'];
@@ -37,20 +36,8 @@ class CharacterController
         $response = $this->httpClient->request('GET', $url);
         $characterData = json_decode($response->getBody()->getContents(), true);
 
-        try {
-            $episodeUrl = $characterData['episode'][0];
-            $episodeResponse = $this->httpClient->request('GET', $episodeUrl);
-            $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
-            $firstSeenIn = new Episode($episodeData['name']);
-        } catch (\Exception $e) {
-            $firstSeenIn = null;
-        }
-
-        return new View('Json', ['data' => $characterData, 'firstSeenIn' => $firstSeenIn]);
+        return new View('Json', ['data' => $characterData]);
     }
-
-
-
 
     public function locationJson(array $vars, Environment $twig): View
     {
@@ -63,15 +50,22 @@ class CharacterController
         return new View('Json', ['data' => $locationData]);
     }
 
-
-    public function episodeJson(array $vars, Environment $twig): View
+    public function episodeObject(array $vars, Environment $twig): View
     {
-        $id = $vars['id'];
-        $url = "https://rickandmortyapi.com/api/episode/$id";
+        $episodeId = $vars['id'];
+        $url = "https://rickandmortyapi.com/api/episode/$episodeId";
 
         $response = $this->httpClient->request('GET', $url);
         $episodeData = json_decode($response->getBody()->getContents(), true);
 
-        return new View('Json', ['data' => $episodeData]);
+        $ID = $episodeData['id'];
+        $name = $episodeData['name'];
+        $airDate = $episodeData['air_date'];
+        $episode = $episodeData['episode'];
+        $characters = $episodeData['characters'] ?? [];
+
+        $episode = new Episode($ID, $name, $airDate, $episode, $characters);
+
+        return new View('EpisodeObject', ['data' => $episode]);
     }
 }
