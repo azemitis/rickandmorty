@@ -21,7 +21,7 @@ class CharacterController
     public function home(array $vars, Environment $twig): View
     {
         $characters = $this->model->getCharacters();
-        array_splice($characters, 10);
+        array_splice($characters, 6);
 
         return new View('Cards', ['characters' => $characters]);
     }

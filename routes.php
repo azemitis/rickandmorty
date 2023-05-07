@@ -1,7 +1,5 @@
 <?php declare(strict_types=1);
 
-//use App\Controllers\CharacterController;
-
 return [
     ['GET', '/', ['App\Controllers\CharacterController', 'home']],
     ['GET', '/character/{id}', ['App\Controllers\CharacterController', 'characterJson']],
