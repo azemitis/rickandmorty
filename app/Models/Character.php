@@ -20,9 +20,12 @@ class Character
             $url = 'https://rickandmortyapi.com/api/character/';
 
             $response = $this->client->request('GET', $url);
+
             $data = json_decode($response->getBody()->getContents(), true);
 
-            $characters = array_map(function ($character) use ($url) {
+            $characters = [];
+
+            foreach ($data['results'] as $character) {
                 $episodeUrl = $character['episode'][0];
                 $episodeResponse = $this->client->request('GET', $episodeUrl);
                 $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
@@ -31,7 +34,7 @@ class Character
                 $locationUrl = $character['location']['url'];
                 $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
 
-                return [
+                $characters[] = [
                     'title' => $character['name'],
                     'status' => $character['status'],
                     'species' => $character['species'],
@@ -43,7 +46,7 @@ class Character
                     'first_seen_id' => $episodeData['id'],
                     'url' => $url,
                 ];
-            }, $data['results']);
+            }
 
             return $characters;
 
@@ -51,4 +54,5 @@ class Character
             return [];
         }
     }
+
 }

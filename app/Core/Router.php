@@ -22,7 +22,7 @@ class Router
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
                 http_response_code(404);
-                return 'rabbit';
+                return 'Unknown';
             case \FastRoute\Dispatcher::FOUND:
                 $handler = $routeInfo[1];
                 $vars = $routeInfo[2];

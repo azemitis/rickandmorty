@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Cache;
 use App\Models\Character;
 use App\Models\Episode;
 use App\Views\View;
@@ -22,7 +23,7 @@ class CharacterController
     public function home(array $vars, Environment $twig): View
     {
         $characters = $this->model->getCharacters();
-        array_splice($characters, 6);
+        array_splice($characters, 20);
 
         return new View('Cards', ['characters' => $characters]);
     }
@@ -55,14 +56,24 @@ class CharacterController
         $episodeId = $vars['id'];
         $url = "https://rickandmortyapi.com/api/episode/$episodeId";
 
-        $response = $this->httpClient->request('GET', $url);
-        $episodeData = json_decode($response->getBody()->getContents(), true);
+        if (!Cache::has('episode'))
+        {
+            var_dump('ask rick and morty');
+            $response = $this->httpClient->request('GET', $url);
+            $responseJson = $response->getBody()->getContents();
+            Cache::remember('episode', $responseJson, 15);
+        } else {
+            var_dump('ask cache');
+            $responseJson = Cache::get('episode');
+        }
+
+        $episodeData = json_decode($responseJson, true);
 
         $ID = $episodeData['id'];
         $name = $episodeData['name'];
         $airDate = $episodeData['air_date'];
         $episode = $episodeData['episode'];
-        $characters = $episodeData['characters'] ?? [];
+        $characters = $episodeData['characters'];
 
         $episode = new Episode($ID, $name, $airDate, $episode, $characters);
 
