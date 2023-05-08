@@ -1,43 +1,55 @@
-
 {% extends 'layout.twig' %}
 
 {% block content %}
-
     <div>
-            <div class="grid grid-cols-2 gap-6 justify-items-center bg-gray-800 pt-20 pl-5">
-                {% for character in characters %}
-                    <div class="max-w-md w-full lg:max-w-full lg:flex pl-4">
-                        <div class="w-96 h-54 lg:h-auto lg:w-64 flex-none bg-cover rounded-tl rounded-bl
-                        text-center overflow-hidden shadow-lg"
-                             style="background-image: url('{{ character.image }}')">
-                        </div>
-                        <div class="bg-gray-700 w-96 h-54
-                        rounded-tr rounded-br p-4 flex
-                        flex-col justify-between leading-normal shadow-lg">
-                            <div class="mb-8">
-                                <a href="/character/{{ character.id }}"
-                                   target="_blank" class="text-2xl text-white font-bold">{{ character.title }}</a>
-                                <ul class="text-l text-white"><span class="status_icon {{ character.status|lower }}"
-                                          {% if character.status == 'Alive' %}style="background-color: green;"
-                                          {% elseif character.status == 'Dead' %}style="background-color: red;"
-                                            {% endif %}></span>  {{ character.status }} - {{ character.species }}</ul>
-                                <ul class="text-gray-400"> Last known location:</ul>
-                                <a href="/location/{{ character.location_id }}"
-                                   target="_blank" class="text-xl text-white">
-                                    {{ character.last_known_location }}</a>
-                                <ul class="text-gray-400"> First seen in:</ul>
-                                <a href="/episode/{{ character.first_seen_id }}"
-                                   target="_blank" class="text-xl text-white">
-                                    {{ character.first_seen_in }}</a>
-                            </div>
+        <div class="grid grid-cols-2 gap-6 justify-items-center bg-gray-800 pt-20 pl-5">
+            {% for character in characters %}
+                <div class="max-w-md w-full lg:max-w-full lg:flex pl-4">
+                    <div class="w-96 h-54 lg:h-auto lg:w-64 flex-none bg-cover rounded-tl rounded-bl
+                    text-center overflow-hidden shadow-lg"
+                         style="background-image: url('{{ character.getImage() }}')">
+                    </div>
+                    <div class="bg-gray-700 w-96 h-54
+                    rounded-tr rounded-br p-4 flex
+                    flex-col justify-between leading-normal shadow-lg">
+                        <div class="mb-8">
+                            <a href="/character/{{ character.getId() }}"
+                               target="_blank" class="text-2xl text-white font-bold">{{ character.getTitle() }}</a>
+                            <ul class="text-l text-white">
+                                {{ character.getStatusIcon() }} {{ character.getStatus() }} - {{ character.getSpecies() }}
+                            </ul>
+                            <ul class="text-gray-400">Last known location:</ul>
+                            <a href="/location/{{ character.getLocationId() }}"
+                               target="_blank" class="text-xl text-white">
+                                {{ character.getLastKnownLocation() }}</a>
+                            <ul class="text-gray-400">First seen in:</ul>
+                            <a href="/episode/{{ character.getFirstSeenId() }}"
+                               target="_blank" class="text-xl text-white">
+                                {{ character.getFirstSeenIn() }}</a>
                         </div>
                     </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex justify-center mt-10">
+            <div class="text-gray-400">
+                {% if pagination.current_page > 1 %}
+                    <a href="/characters/{{ pagination.current_page - 1 }}" class="mr-2">Previous</a>
+                {% endif %}
+
+                {% for page in 1..pagination.total_pages %}
+                    <a href="/characters/{{ page }}" class="{% if page == pagination.current_page %}font-bold{% endif %}">{{ page }}</a>
                 {% endfor %}
+
+                {% if pagination.current_page < pagination.total_pages %}
+                    <a href="/characters/{{ pagination.current_page + 1 }}" class="ml-2">Next</a>
+                {% endif %}
             </div>
+        </div>
     </div>
 
     <div class="bg-gray-800 text-white text-center flex justify-center">
-            <span class="mt-20 mb-20">Characters. 2023</span>
+        <span class="mt-20 mb-20">Characters. 2023</span>
     </div>
-
 {% endblock %}

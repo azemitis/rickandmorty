@@ -3,31 +3,76 @@
 namespace App\Controllers;
 
 use App\Cache;
-use App\Models\Character;
+use App\Models\CharacterObject;
 use App\Models\Episode;
 use App\Views\View;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Twig\Environment;
 
 class CharacterController
 {
-    private Character $model;
     private Client $httpClient;
 
     public function __construct()
     {
-        $this->model = new Character();
         $this->httpClient = new Client();
     }
 
     public function home(array $vars, Environment $twig): View
     {
-        $characters = $this->model->getCharacters();
-        array_splice($characters, 20);
+        try {
 
-        return new View('Cards', ['characters' => $characters]);
+            $cacheKey = 'characters';
+
+            if (!Cache::has($cacheKey)) {
+                $url = 'https://rickandmortyapi.com/api/character/';
+                $response = $this->httpClient->request('GET', $url);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                $characters = $data['results'];
+                array_splice($characters, 6);
+
+                $characterObjects = [];
+
+                foreach ($characters as $character) {
+                    $episodeUrl = $character['episode'][0];
+                    $episodeResponse = $this->httpClient->request('GET', $episodeUrl);
+                    $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
+                    $firstSeenIn = $episodeData['name'];
+                    $firstSeenId = $episodeData['id'];
+
+                    $locationUrl = $character['location']['url'];
+                    $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
+
+                    $characterObject = new CharacterObject(
+                        $character['name'],
+                        $character['status'],
+                        $character['species'],
+                        $character['image'],
+                        $character['id'],
+                        $locationId,
+                        $character['location']['name'],
+                        $firstSeenIn,
+                        $firstSeenId,
+                        $url
+                    );
+
+                    $characterObjects[] = $characterObject;
+                }
+
+                Cache::remember($cacheKey, serialize($characterObjects), 15);
+            } else {
+                $characterObjects = unserialize(Cache::get($cacheKey));
+            }
+
+            return new View('Cards', ['characters' => $characterObjects]);
+
+        } catch (GuzzleException $exception) {
+            $errorMessage = 'An error occurred while fetching character data.';
+            return new View('Message', ['message' => $errorMessage]);
+        }
     }
-
 
     public function characterJson(array $vars, Environment $twig): View
     {
@@ -56,8 +101,7 @@ class CharacterController
         $episodeId = $vars['id'];
         $url = "https://rickandmortyapi.com/api/episode/$episodeId";
 
-        if (!Cache::has('episode'))
-        {
+        if (!Cache::has('episode')) {
             var_dump('ask rick and morty');
             $response = $this->httpClient->request('GET', $url);
             $responseJson = $response->getBody()->getContents();
