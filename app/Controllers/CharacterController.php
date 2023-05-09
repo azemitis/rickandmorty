@@ -31,54 +31,17 @@ class CharacterController
 
                 $totalCharacters = $data['info']['count'];
 
-                Cache::remember($cacheKey, $totalCharacters, 5);
+                Cache::remember($cacheKey, $totalCharacters, 15);
             } else {
                 $totalCharacters = Cache::get($cacheKey);
             }
 
-            $currentPage = isset($vars['page']) ? (int) $vars['page'] : 1;
-            $perPage = 10;
+            $currentPage = isset($vars['page']) ? (int)$vars['page'] : 1;
+
+            $characters = $this->fetchCharacters($currentPage);
+
+            $perPage = count($characters);
             $totalPages = ceil($totalCharacters / $perPage);
-            $offset = ($currentPage - 1) * $perPage;
-
-            $characters = [];
-
-            if ($offset < $totalCharacters) {
-                $url = 'https://rickandmortyapi.com/api/character/?page=' . $currentPage;
-                $response = $this->httpClient->request('GET', $url);
-                $data = json_decode($response->getBody()->getContents(), true);
-
-                $charactersData = $data['results'];
-
-                foreach ($charactersData as $characterData) {
-                    $episodeUrl = $characterData['episode'][0];
-                    $episodeResponse = $this->httpClient->request('GET', $episodeUrl);
-                    $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
-                    $firstSeenIn = $episodeData['name'];
-                    $firstSeenId = $episodeData['id'];
-
-                    $locationUrl = $characterData['location']['url'];
-                    $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
-
-                    $characterObject = new CharacterObject(
-                        $characterData['id'],
-                        $characterData['name'],
-                        $characterData['status'],
-                        $characterData['species'],
-                        $characterData['image'],
-                        $locationId,
-                        $characterData['location']['name'],
-                        $firstSeenIn,
-                        $firstSeenId,
-                        $url
-                    );
-
-                    $characterCacheKey = 'character_' . $characterData['id'];
-                    Cache::remember($characterCacheKey, $characterObject, 5);
-
-                    $characters[] = $characterObject;
-                }
-            }
 
             $paginatedCharacters = $characters;
 
@@ -104,8 +67,47 @@ class CharacterController
         }
     }
 
+    private function fetchCharacters(int $currentPage): array
+    {
+        $characters = [];
 
+        $url = 'https://rickandmortyapi.com/api/character/?page=' . $currentPage;
+        $response = $this->httpClient->request('GET', $url);
+        $data = json_decode($response->getBody()->getContents(), true);
 
+        $charactersData = $data['results'];
+
+        foreach ($charactersData as $characterData) {
+            $episodeUrl = $characterData['episode'][0];
+            $episodeResponse = $this->httpClient->request('GET', $episodeUrl);
+            $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
+            $firstSeenIn = $episodeData['name'];
+            $firstSeenId = $episodeData['id'];
+
+            $locationUrl = $characterData['location']['url'];
+            $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
+
+            $characterObject = new CharacterObject(
+                $characterData['id'],
+                $characterData['name'],
+                $characterData['status'],
+                $characterData['species'],
+                $characterData['image'],
+                $locationId,
+                $characterData['location']['name'],
+                $firstSeenIn,
+                $firstSeenId,
+                $url
+            );
+
+            $characterCacheKey = 'character_' . $characterData['id'];
+            Cache::remember($characterCacheKey, $characterObject, 15);
+
+            $characters[] = $characterObject;
+        }
+
+        return $characters;
+    }
 
     public function characterJson(array $vars, Environment $twig): View
     {
