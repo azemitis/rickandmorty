@@ -22,7 +22,6 @@ class CharacterController
     public function home(array $vars, Environment $twig): View
     {
         try {
-
             $cacheKey = 'characters';
 
             if (!Cache::has($cacheKey)) {
@@ -31,7 +30,8 @@ class CharacterController
                 $data = json_decode($response->getBody()->getContents(), true);
 
                 $characters = $data['results'];
-                array_splice($characters, 6);
+                $characters = array_slice($characters, 0, 18); // this line creates characters.json in cache
+                                                            // AND BREAKS PAGINATION
 
                 $characterObjects = [];
 
@@ -46,11 +46,11 @@ class CharacterController
                     $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
 
                     $characterObject = new CharacterObject(
+                        $character['id'],
                         $character['name'],
                         $character['status'],
                         $character['species'],
                         $character['image'],
-                        $character['id'],
                         $locationId,
                         $character['location']['name'],
                         $firstSeenIn,
@@ -59,17 +59,31 @@ class CharacterController
                     );
 
                     $characterObjects[] = $characterObject;
+
+                    $characterCacheKey = 'character_' . $character['id'];
+                    Cache::remember($characterCacheKey, $characterObject, 5);
                 }
 
-                Cache::remember($cacheKey, serialize($characterObjects), 15);
+                Cache::remember($cacheKey, $characterObjects, 5);
             } else {
-                $characterObjects = unserialize(Cache::get($cacheKey));
+                $characterObjects = Cache::get($cacheKey);
             }
 
-            return new View('Cards', ['characters' => $characterObjects]);
+            $currentPage = isset($vars['page']) ? (int)$vars['page'] : 1;
+            $perPage = 10;
+            $totalCharacters = count($characterObjects);
+            $totalPages = ceil($totalCharacters / $perPage);
+            $offset = ($currentPage - 1) * $perPage;
+            $paginatedCharacters = array_slice($characterObjects, $offset, $perPage);
 
+            $pagination = [
+                'current_page' => $currentPage,
+                'total_pages' => $totalPages,
+            ];
+
+            return new View('Cards', ['characters' => $paginatedCharacters, 'pagination' => $pagination]);
         } catch (GuzzleException $exception) {
-            $errorMessage = 'An error occurred while fetching character data.';
+            $errorMessage = 'Error while fetching character data.';
             return new View('Message', ['message' => $errorMessage]);
         }
     }

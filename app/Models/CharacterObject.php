@@ -4,11 +4,11 @@ namespace App\Models;
 
 class CharacterObject
 {
+    public int $id;
     public string $title;
     public string $status;
     public string $species;
     public string $image;
-    public int $id;
     public string $locationId;
     public string $lastKnownLocation;
     public string $firstSeenIn;
@@ -16,27 +16,32 @@ class CharacterObject
     public string $url;
 
     public function __construct(
+        int $id,
         string $title,
         string $status,
         string $species,
         string $image,
-        int $id,
         string $locationId,
         string $lastKnownLocation,
         string $firstSeenIn,
         int $firstSeenId,
         string $url
     ) {
+        $this->id = $id;
         $this->title = $title;
         $this->status = $status;
         $this->species = $species;
         $this->image = $image;
-        $this->id = $id;
         $this->locationId = $locationId;
         $this->lastKnownLocation = $lastKnownLocation;
         $this->firstSeenIn = $firstSeenIn;
         $this->firstSeenId = $firstSeenId;
         $this->url = $url;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
     }
 
     public function getTitle(): string
@@ -57,11 +62,6 @@ class CharacterObject
     public function getImage(): string
     {
         return $this->image;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     public function getLocationId(): string

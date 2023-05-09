@@ -3,65 +3,62 @@
 namespace App;
 
 use Carbon\Carbon;
-use stdClass;
 
 class Cache
 {
-
-    public static function remember(string $key, string $data, int $ttl): void
+    public static function remember(string $key, $data, int $ttl): void
     {
-        $cacheFile = __DIR__ . '/../cache/' . $key;
+        $cacheFile = self::getCacheFilePath($key);
+        self::forget($key);
 
         file_put_contents($cacheFile, json_encode([
             'expires_at' => Carbon::now()->addSeconds($ttl),
-            'content' => $data
+            'content' => serialize($data)
         ]));
     }
 
+
     public static function forget(string $key): void
     {
-        unlink(__DIR__ . '/../cache/' . $key);
+        $cacheFile = self::getCacheFilePath($key);
+
+        if (file_exists($cacheFile)) {
+            $content = json_decode(file_get_contents($cacheFile));
+            $expiresAt = Carbon::parse($content->expires_at);
+
+            if (Carbon::now() > $expiresAt) {
+                unlink($cacheFile);
+            }
+        }
     }
 
-    public static function get(string $key): ?string
+    public static function get(string $key)
     {
-        if (!self::has($key))
-            {
-                return null;
-            }
+        if (!self::has($key)) {
+            return null;
+        }
 
-        $content = json_decode(file_get_contents(__DIR__ . '/../cache/' . $key));
+        $cacheFile = self::getCacheFilePath($key);
+        $content = json_decode(file_get_contents($cacheFile));
 
-        return $content->content;
+        return unserialize($content->content);
     }
 
     public static function has(string $key): bool
     {
-        if (!file_exists(__DIR__ . '/../cache/' . $key))
-        {
+        $cacheFile = self::getCacheFilePath($key);
+
+        if (!file_exists($cacheFile)) {
             return false;
         }
 
-        $content = json_decode(file_get_contents(__DIR__ . '/../cache/' . $key));
+        $content = json_decode(file_get_contents($cacheFile));
 
-        return Carbon::now() < $content->expires_at;
+        return Carbon::now() < Carbon::parse($content->expires_at);
+    }
 
-
+    private static function getCacheFilePath(string $key): string
+    {
+        return __DIR__ . '/../cache/' . $key . '.json';
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
