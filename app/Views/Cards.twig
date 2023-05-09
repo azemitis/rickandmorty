@@ -34,17 +34,14 @@
 
         <div class="flex justify-center bg-gray-800">
             <div class="text-white">
-                {% if pagination.current_page > 1 %}
-                    <a href="/characters/{{ pagination.current_page - 1 }}" class="mr-2">Previous</a>
+                {% if pagination.prev_url %}
+                    <a href="{{ pagination.prev_url }}">Previous</a>
                 {% endif %}
 
-                {% for page in range(1, pagination.total_pages + 1) %}
-                    <a href="/characters/{{ page }}" class="{% if page == pagination.current_page %}font-bold{% endif %}">{{ page }}</a>
-                {% endfor %}
-
-                {% if pagination.current_page < pagination.total_pages %}
-                    <a href="/characters/{{ pagination.current_page + 1 }}" class="ml-2">Next</a>
+                {% if pagination.next_url %}
+                    <a href="{{ pagination.next_url }}">Next</a>
                 {% endif %}
+
             </div>
         </div>
     </div>

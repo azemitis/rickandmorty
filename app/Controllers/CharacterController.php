@@ -29,55 +29,73 @@ class CharacterController
                 $response = $this->httpClient->request('GET', $url);
                 $data = json_decode($response->getBody()->getContents(), true);
 
-                $characters = $data['results'];
+                $totalCharacters = $data['info']['count'];
 
-                $characterObjects = [];
+                Cache::remember($cacheKey, $totalCharacters, 5);
+            } else {
+                $totalCharacters = Cache::get($cacheKey);
+            }
 
-                foreach ($characters as $character) {
-                    $episodeUrl = $character['episode'][0];
+            $currentPage = isset($vars['page']) ? (int) $vars['page'] : 1;
+            $perPage = 10;
+            $totalPages = ceil($totalCharacters / $perPage);
+            $offset = ($currentPage - 1) * $perPage;
+
+            $characters = [];
+
+            if ($offset < $totalCharacters) {
+                $url = 'https://rickandmortyapi.com/api/character/?page=' . $currentPage;
+                $response = $this->httpClient->request('GET', $url);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                $charactersData = $data['results'];
+
+                foreach ($charactersData as $characterData) {
+                    $episodeUrl = $characterData['episode'][0];
                     $episodeResponse = $this->httpClient->request('GET', $episodeUrl);
                     $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
                     $firstSeenIn = $episodeData['name'];
                     $firstSeenId = $episodeData['id'];
 
-                    $locationUrl = $character['location']['url'];
+                    $locationUrl = $characterData['location']['url'];
                     $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
 
                     $characterObject = new CharacterObject(
-                        $character['id'],
-                        $character['name'],
-                        $character['status'],
-                        $character['species'],
-                        $character['image'],
+                        $characterData['id'],
+                        $characterData['name'],
+                        $characterData['status'],
+                        $characterData['species'],
+                        $characterData['image'],
                         $locationId,
-                        $character['location']['name'],
+                        $characterData['location']['name'],
                         $firstSeenIn,
                         $firstSeenId,
                         $url
                     );
 
-                    $characterObjects[] = $characterObject;
-
-                    $characterCacheKey = 'character_' . $character['id'];
+                    $characterCacheKey = 'character_' . $characterData['id'];
                     Cache::remember($characterCacheKey, $characterObject, 5);
-                }
 
-                Cache::remember($cacheKey, $characterObjects, 5);
-            } else {
-                $characterObjects = Cache::get($cacheKey);
+                    $characters[] = $characterObject;
+                }
             }
 
-            $currentPage = isset($vars['page']) ? (int)$vars['page'] : 1;
-            $perPage = 10;
-            $totalCharacters = count($characterObjects);
-            $totalPages = ceil($totalCharacters / $perPage);
-            $offset = ($currentPage - 1) * $perPage;
-            $paginatedCharacters = array_slice($characterObjects, $offset, $perPage);
+            $paginatedCharacters = $characters;
 
             $pagination = [
                 'current_page' => $currentPage,
                 'total_pages' => $totalPages,
             ];
+
+            if ($currentPage > 1) {
+                $prevPage = $currentPage - 1;
+                $pagination['prev_url'] = "/characters/$prevPage";
+            }
+
+            if ($currentPage < $totalPages) {
+                $nextPage = $currentPage + 1;
+                $pagination['next_url'] = "/characters/$nextPage";
+            }
 
             return new View('Cards', ['characters' => $paginatedCharacters, 'pagination' => $pagination]);
         } catch (GuzzleException $exception) {
@@ -85,6 +103,9 @@ class CharacterController
             return new View('Message', ['message' => $errorMessage]);
         }
     }
+
+
+
 
     public function characterJson(array $vars, Environment $twig): View
     {
