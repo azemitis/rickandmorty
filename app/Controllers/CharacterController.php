@@ -30,8 +30,6 @@ class CharacterController
                 $data = json_decode($response->getBody()->getContents(), true);
 
                 $characters = $data['results'];
-                $characters = array_slice($characters, 0, 18); // this line creates characters.json in cache
-                                                            // AND BREAKS PAGINATION
 
                 $characterObjects = [];
 

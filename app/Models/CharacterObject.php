@@ -9,7 +9,7 @@ class CharacterObject
     public string $status;
     public string $species;
     public string $image;
-    public string $locationId;
+    public $locationId;
     public string $lastKnownLocation;
     public string $firstSeenIn;
     public int $firstSeenId;
@@ -21,7 +21,7 @@ class CharacterObject
         string $status,
         string $species,
         string $image,
-        string $locationId,
+        $locationId,
         string $lastKnownLocation,
         string $firstSeenIn,
         int $firstSeenId,
@@ -64,7 +64,7 @@ class CharacterObject
         return $this->image;
     }
 
-    public function getLocationId(): string
+    public function getLocationId()
     {
         return $this->locationId;
     }
