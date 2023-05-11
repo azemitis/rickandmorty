@@ -1,6 +1,12 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
+    <div class="flex pt-20 pb-10 items-center justify-center">
+        <div class="bg-white p-8 rounded-lg" style="height: 25vh;">
+            <h1 class="text-8xl text-gray-700 font-bold text-center">The Rick and Morty API</h1>
+        </div>
+    </div>
+
     <div>
         <div class="grid grid-cols-2 gap-6 justify-items-center bg-gray-800 pt-20 pl-5 pb-10">
             {% for character in characters %}
@@ -13,12 +19,13 @@
                     rounded-tr rounded-br p-4 flex
                     flex-col justify-between leading-normal shadow-lg">
                         <div class="mb-8">
-                            <a href="/character/{{ character.getId() }}"
-                               target="_blank" class="text-2xl text-white font-bold">{{ character.getTitle() }}</a>
-                            <ul class="text-l text-white">
-                                {{ character.getStatusIcon() }} {{ character.getStatus() }} - {{ character.getSpecies() }}
-                            </ul>
-                            <ul class="text-gray-400">Last known location:</ul>
+                            <a href="/character/{{ character.id }}"
+                               target="_blank" class="text-2xl text-white font-bold">{{ character.title }}</a>
+                            <ul class="text-l text-white"><span class="status_icon {{ character.status|lower }}"
+                                 {% if character.status == 'Alive' %}style="background-color: green;"
+                                 {% elseif character.status == 'Dead' %}style="background-color: red;"
+                                 {% endif %}></span> {{ character.status }} - {{ character.species }}</ul>
+                            <ul class="text-gray-400"> Last known location:</ul>
                             <a href="/location/{{ character.getLocationId() }}"
                                target="_blank" class="text-xl text-white">
                                 {{ character.getLastKnownLocation() }}</a>

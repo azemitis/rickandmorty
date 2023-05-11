@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 namespace App\Controllers;
 
@@ -13,10 +13,17 @@ use Twig\Environment;
 class CharacterController
 {
     private Client $httpClient;
+    private string $fetchMessage = '';
 
     public function __construct()
     {
         $this->httpClient = new Client();
+    }
+
+//    Message if external API data is used
+    private function logFetchedData(array $data): void
+    {
+        $this->fetchMessage = 'Data from external API received.';
     }
 
     public function home(array $vars, Environment $twig): View
@@ -62,7 +69,7 @@ class CharacterController
 
             return new View('Cards', ['characters' => $paginatedCharacters, 'pagination' => $pagination]);
         } catch (GuzzleException $exception) {
-            $errorMessage = 'Error while fetching character data.';
+            $errorMessage = 'Error fetching character data.';
             return new View('Message', ['message' => $errorMessage]);
         }
     }
@@ -81,8 +88,6 @@ class CharacterController
             $episodeUrl = $characterData['episode'][0];
             $episodeResponse = $this->httpClient->request('GET', $episodeUrl);
             $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
-            $firstSeenIn = $episodeData['name'];
-            $firstSeenId = $episodeData['id'];
 
             $locationUrl = $characterData['location']['url'];
             $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
@@ -95,8 +100,8 @@ class CharacterController
                 $characterData['image'],
                 $locationId,
                 $characterData['location']['name'],
-                $firstSeenIn,
-                $firstSeenId,
+                $episodeData['name'],
+                $episodeData['id'],
                 $url
             );
 
@@ -109,15 +114,56 @@ class CharacterController
         return $characters;
     }
 
-    public function characterJson(array $vars, Environment $twig): View
+    public function characterObject(array $vars, Environment $twig): View
     {
         $id = $vars['id'];
         $url = "https://rickandmortyapi.com/api/character/$id";
 
-        $response = $this->httpClient->request('GET', $url);
-        $characterData = json_decode($response->getBody()->getContents(), true);
+        $cacheKey = 'character_' . $id;
 
-        return new View('Json', ['data' => $characterData]);
+        if (!Cache::has($cacheKey)) {
+            try {
+                $response = $this->httpClient->request('GET', $url);
+                $characterData = json_decode($response->getBody()->getContents(), true);
+
+                $locationUrl = $characterData['location']['url'];
+                $locationResponse = $this->httpClient->request('GET', $locationUrl);
+                $locationData = json_decode($locationResponse->getBody()->getContents(), true);
+
+                $episodeUrl = $characterData['episode'][0];
+                $episodeResponse = $this->httpClient->request('GET', $episodeUrl);
+                $episodeData = json_decode($episodeResponse->getBody()->getContents(), true);
+
+                $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
+
+                $characterObject = new CharacterObject(
+                    $characterData['id'],
+                    $characterData['name'],
+                    $characterData['status'],
+                    $characterData['species'],
+                    $characterData['image'],
+                    $locationId,
+                    $locationData['name'],
+                    $episodeData['name'],
+                    $episodeData['id'],
+                    $url
+                );
+
+                Cache::remember($cacheKey, $characterObject, 15);
+
+                $this->fetchMessage = 'Data from external API received.';
+            } catch (RequestException $exception) {
+                $errorMessage = 'Error fetching character data.';
+                return new View('Message', ['message' => $errorMessage]);
+            }
+        } else {
+            $characterObject = Cache::get($cacheKey);
+        }
+
+        return new View('Character', [
+            'character' => $characterObject,
+            'fetchMessage' => $this->fetchMessage
+        ]);
     }
 
     public function locationJson(array $vars, Environment $twig): View
