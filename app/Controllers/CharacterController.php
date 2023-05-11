@@ -114,6 +114,34 @@ class CharacterController
         return $characters;
     }
 
+    public function searchCharacters(array $vars, Environment $twig): View
+    {
+        $query = $_GET['q'];
+
+        try {
+            $filteredCharacters = [];
+
+            for ($i = 1; $i <= 42; $i++) {
+                $url = 'https://rickandmortyapi.com/api/character?page=' . $i;
+                $response = $this->httpClient->request('GET', $url);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                $characters = $data['results'];
+
+                foreach ($characters as $character) {
+                    if (stripos($character['name'], $query) !== false) {
+                        $filteredCharacters[] = $character;
+                    }
+                }
+            }
+
+            return new View('SearchResults', ['characters' => $filteredCharacters]);
+        } catch (GuzzleException $exception) {
+            $errorMessage = 'Error fetching character data.';
+            return new View('Message', ['message' => $errorMessage]);
+        }
+    }
+
     public function characterObject(array $vars, Environment $twig): View
     {
         $id = $vars['id'];

@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace app\Core;
+namespace App\Core;
 
 use FastRoute\RouteCollector;
+use FastRoute\Dispatcher;
 
 class Router
 {
@@ -16,16 +17,35 @@ class Router
         });
 
         $httpMethod = $_SERVER['REQUEST_METHOD'];
+
+        // Extract the query parameters
         $uri = $_SERVER['REQUEST_URI'];
+        $queryString = parse_url($uri, PHP_URL_QUERY);
+        if ($queryString) {
+            parse_str($queryString, $queryParams);
+            $uri = parse_url($uri, PHP_URL_PATH);
+        } else {
+            $queryParams = [];
+        }
+
         $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 
+
         switch ($routeInfo[0]) {
-            case \FastRoute\Dispatcher::NOT_FOUND:
+            case Dispatcher::NOT_FOUND:
                 http_response_code(404);
                 return 'Unknown';
-            case \FastRoute\Dispatcher::FOUND:
+            case Dispatcher::FOUND:
                 $handler = $routeInfo[1];
                 $vars = $routeInfo[2];
+
+                // Check if query string is set
+                if (isset($_SERVER['QUERY_STRING'])) {
+                    parse_str($_SERVER['QUERY_STRING'], $queryParams);
+                    $vars['queryParams'] = $queryParams;
+                } else {
+                    $vars['queryParams'] = [];
+                }
 
                 [$class, $method] = $handler;
 
@@ -40,6 +60,5 @@ class Router
         }
 
         return null;
-
     }
 }

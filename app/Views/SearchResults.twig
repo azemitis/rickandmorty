@@ -1,0 +1,59 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <div class="flex pt-20 pb-10 items-center justify-center">
+        <div class="bg-white p-8 rounded-lg" style="height: 25vh;">
+            <h1 class="text-8xl text-gray-700 font-bold text-center">Search results</h1>
+        </div>
+    </div>
+
+    <div class="flex space-x-4 mb-4 items-center justify-center">
+        <form action="/search" method="GET" class="rounded-lg bg-gray-700 flex items-center">
+
+            <label for="name" class="mx-2 text-white">Search character by name:</label>
+            <input type="text" id="name" name="q" class="bg-white">
+            <button type="submit" class="ml-2 bg-gray-500 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
+                Search
+            </button>
+        </form>
+
+        <div class="rounded-lg bg-gray-700 mx-2 p-2 flex items-center">
+            <label for="location" class="mx-2 text-white">Select by location:</label>
+            <select id="location" name="location" class="bg-white">
+                <option value="">All locations</option>
+                {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+        <div class="rounded-lg bg-gray-700 p-2 flex items-center">
+            <label for="episode" class="mx-2 text-white">Select by episode:</label>
+            <select id="episode" name="episode" class="bg-white">
+                <option value="" class="mx-2">All episodes</option>
+                <!-- Add episodes -->
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-6 justify-items-center bg-gray-800 pt-20 pl-5 pb-10">
+        {% if characters is empty %}
+            <p>No characters found.</p>
+        {% else %}
+            {% for character in characters %}
+                <div class="max-w-md w-full lg:max-w-full lg:flex pl-4">
+                    <div class="w-96 h-54 lg:h-48 lg:w-64 flex-none bg-cover rounded-tl rounded-bl
+                        text-center overflow-hidden shadow-lg"
+                         style="background-image: url('{{ character.image }}')">
+                    </div>
+                    <div class="bg-gray-700 w-96 h-54 rounded-tr rounded-br p-4 flex flex-col justify-between leading-normal shadow-lg">
+                        <div class="mb-8">
+                            <a href="/character/{{ character.id }}"
+                               target="_blank" class="text-2xl text-white font-bold">{{ character.name }}</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}

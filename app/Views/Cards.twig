@@ -7,6 +7,35 @@
         </div>
     </div>
 
+    <div class="flex space-x-4 mb-4 items-center justify-center">
+        <form action="/search" method="GET" class="rounded-lg bg-gray-700 p-2 flex items-center">
+
+            <label for="name" class="mx-2 text-white">Search character by name:</label>
+            <input type="text" id="name" name="q" class="bg-white">
+            <button type="submit" class="ml-2 bg-gray-500 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
+                Search
+            </button>
+        </form>
+
+        <div class="rounded-lg bg-gray-700 p-2 flex items-center">
+            <label for="location" class="mx-2 text-white">Select by location:</label>
+            <select id="location" name="location" class="bg-white">
+                <option value="">All locations</option>
+                {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+        <div class="rounded-lg bg-gray-700 p-2 flex items-center">
+            <label for="episode" class="mx-2 text-white">Select by episode:</label>
+            <select id="episode" name="episode" class="bg-white">
+                <option value="" class="mx-2">All episodes</option>
+                <!-- Add episodes -->
+            </select>
+        </div>
+    </div>
+
     <div>
         <div class="grid grid-cols-2 gap-6 justify-items-center bg-gray-800 pt-20 pl-5 pb-10">
             {% for character in characters %}
