@@ -50,12 +50,37 @@ class CharacterController
         return $locations;
     }
 
+    public function getAllEpisodes(): array
+    {
+        $episodes = [];
+
+        try {
+            for ($i = 1; $i <= 3; $i++) {
+                $url = 'https://rickandmortyapi.com/api/episode?page=' . $i;
+                $response = $this->httpClient->request('GET', $url);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                $episodesData = $data['results'];
+
+                foreach ($episodesData as $episodeData) {
+                    $episodes[] = $episodeData['name'];
+                }
+            }
+        } catch (GuzzleException $exception) {
+            // Add exceptions
+        }
+
+        return $episodes;
+    }
+
+
     public function home(array $vars, Environment $twig): View
     {
         try {
             $cacheKey = 'characters';
 
             $locations = $this->getAllLocations();
+            $episodes = $this->getAllEpisodes();
 
             if (!Cache::has($cacheKey)) {
                 $url = 'https://rickandmortyapi.com/api/character/';
@@ -97,6 +122,7 @@ class CharacterController
                 'characters' => $paginatedCharacters,
                 'pagination' => $pagination,
                 'locations' => $locations,
+                'episodes' => $episodes,
                 ]);
         } catch (GuzzleException $exception) {
             $errorMessage = 'Error fetching character data.';
@@ -165,7 +191,14 @@ class CharacterController
                 }
             }
 
-            return new View('SearchResults', ['characters' => $filteredCharacters]);
+            $locations = $this->getAllLocations();
+            $episodes = $this->getAllEpisodes();
+
+            return new View('SearchResults', [
+                'characters' => $filteredCharacters,
+                'locations' => $locations,
+                'episodes' => $episodes
+            ]);
         } catch (GuzzleException $exception) {
             $errorMessage = 'Error fetching character data.';
             return new View('Message', ['message' => $errorMessage]);
@@ -263,25 +296,31 @@ class CharacterController
         $episodeId = $vars['id'];
         $url = "https://rickandmortyapi.com/api/episode/$episodeId";
 
-        if (!Cache::has('episode')) {
-            var_dump('ask rick and morty');
-            $response = $this->httpClient->request('GET', $url);
-            $responseJson = $response->getBody()->getContents();
-            Cache::remember('episode', $responseJson, 15);
+        $cacheKey = 'episode_' . $episodeId;
+
+        if (!Cache::has($cacheKey)) {
+            try {
+                $response = $this->httpClient->request('GET', $url);
+                $episodeData = json_decode($response->getBody()->getContents(), true);
+
+                $ID = $episodeData['id'];
+                $name = $episodeData['name'];
+                $airDate = $episodeData['air_date'];
+                $episode = $episodeData['episode'];
+                $characters = $episodeData['characters'];
+
+                $episode = new Episode($ID, $name, $airDate, $episode, $characters);
+
+                Cache::remember($cacheKey, $episode, 15);
+
+                $this->fetchMessage = 'Data from external API received.';
+            } catch (RequestException $exception) {
+                $errorMessage = 'Error fetching episode data.';
+                return new View('Message', ['message' => $errorMessage]);
+            }
         } else {
-            var_dump('ask cache');
-            $responseJson = Cache::get('episode');
+            $episode = Cache::get($cacheKey);
         }
-
-        $episodeData = json_decode($responseJson, true);
-
-        $ID = $episodeData['id'];
-        $name = $episodeData['name'];
-        $airDate = $episodeData['air_date'];
-        $episode = $episodeData['episode'];
-        $characters = $episodeData['characters'];
-
-        $episode = new Episode($ID, $name, $airDate, $episode, $characters);
 
         return new View('Episode', ['data' => $episode]);
     }
