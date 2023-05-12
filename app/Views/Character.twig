@@ -3,7 +3,7 @@
 {% block content %}
     <div class="flex flex-col items-center justify-center h-screen">
         <div class="bg-white p-8 rounded-lg mb-10">
-            <h1 class="text-8xl text-gray-700 font-bold text-center">{{ character.title }}</h1>
+            <h1 class="text-8xl text-gray-700 font-bold text-center">{{ episodeName }}</h1>
         </div>
 
         {% if fetchMessage is not empty %}
@@ -35,7 +35,7 @@
                             {{ character.status }} - {{ character.species }}
                         </span>
                     </div>
-                    <div class="text-2xl mb-2 rounded-lg">First seen in:
+                    <div class="text-2xl mb-2 rounded-lg">Last known location:
                         <span class="bg-gray-800 text-white rounded-lg px-2">
                             {{ character.lastKnownLocation }}</span>
                     </div>

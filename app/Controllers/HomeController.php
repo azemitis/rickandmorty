@@ -73,7 +73,6 @@ class HomeController
         return $episodes;
     }
 
-
     public function home(array $vars, Environment $twig): View
     {
         try {
@@ -333,7 +332,6 @@ class HomeController
         }
     }
 
-
     public function episodeObject(array $vars, Environment $twig): View
     {
         $episodeId = $vars['id'];
@@ -366,5 +364,50 @@ class HomeController
         }
 
         return new View('Episode', ['data' => $episode]);
+    }
+
+    public function filterEpisodes(array $vars, Environment $twig): View
+    {
+        $episode = $_GET['episode'];
+
+        try {
+            // Fetch all episodes from all APIs
+            $episodes = [];
+            for ($i = 1; $i <= 3; $i++) {
+                $url = 'https://rickandmortyapi.com/api/episode?page=' . $i;
+                $response = $this->httpClient->request('GET', $url);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                $episodesData = $data['results'];
+
+                foreach ($episodesData as $episodeData) {
+                    $episodes[$episodeData['name']] = $episodeData['characters'];
+                }
+            }
+
+            // Filter characters based on the selected episode
+            $filteredCharacters = [];
+            if (isset($episodes[$episode])) {
+                $characterUrls = $episodes[$episode];
+                foreach ($characterUrls as $characterUrl) {
+                    $response = $this->httpClient->request('GET', $characterUrl);
+                    $characterData = json_decode($response->getBody()->getContents(), true);
+                    $filteredCharacters[] = $characterData;
+                }
+            }
+
+            $locations = $this->getAllLocations();
+            $episodesList = $this->getAllEpisodes();
+
+            return new View('FilteredEpisodes', [
+                'characters' => $filteredCharacters,
+                'locations' => $locations,
+                'episodes' => $episodesList,
+                'episode' => $episode,
+            ]);
+        } catch (GuzzleException $exception) {
+            $errorMessage = 'Error fetching character data.';
+            return new View('Message', ['message' => $errorMessage]);
+        }
     }
 }
