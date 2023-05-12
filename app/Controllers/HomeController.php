@@ -11,7 +11,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Twig\Environment;
 
-class CharacterController
+class HomeController
 {
     private Client $httpClient;
     private string $fetchMessage = '';

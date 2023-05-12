@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
 return [
-    ['GET', '/', ['App\Controllers\CharacterController', 'home']],
-    ['GET', '/characters/{page:\d+}', ['App\Controllers\CharacterController', 'home']],
-    ['GET', '/character/{id}', ['App\Controllers\CharacterController', 'characterObject']],
-    ['GET', '/location/{id}', ['App\Controllers\CharacterController', 'locationObject']],
-    ['GET', '/episode/{id}', ['App\Controllers\CharacterController', 'episodeObject']],
-    ['GET', '/search', ['App\Controllers\CharacterController', 'searchCharacters']],
-    ['GET', '/filterLocations', ['App\Controllers\CharacterController', 'filterLocations']],
+    ['GET', '/', ['App\Controllers\HomeController', 'home']],
+    ['GET', '/characters/{page:\d+}', ['App\Controllers\HomeController', 'home']],
+    ['GET', '/character/{id}', ['App\Controllers\HomeController', 'characterObject']],
+    ['GET', '/location/{id}', ['App\Controllers\HomeController', 'locationObject']],
+    ['GET', '/episode/{id}', ['App\Controllers\HomeController', 'episodeObject']],
+    ['GET', '/search', ['App\Controllers\HomeController', 'searchCharacters']],
+    ['GET', '/filterLocations', ['App\Controllers\HomeController', 'filterLocations']],
     ];
