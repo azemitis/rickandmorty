@@ -1,0 +1,32 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <div class="flex flex-col items-center justify-center">
+        <div class="bg-white p-8 rounded-lg mb-10">
+            <h1 class="text-8xl text-gray-700 font-bold text-center">{{ data.getName() }}</h1>
+        </div>
+
+        <div class="max-w-md w-full lg:max-w-full lg:flex pl-4">
+            <div class="pl-10 flex flex-col justify-center">
+                <div class="mb-8 text-2xl">ID:
+                    <span class="bg-gray-800 text-white rounded-lg px-2">
+                        {{ data.getID() }}</span>
+                    <div class="text-2xl mb-2">Type:
+                        <span class="bg-gray-800 text-white rounded-lg px-2">
+                            {{ data.getType() }}</span>
+                    </div>
+                    <div class="text-2xl mb-2">Dimension:
+                        <span class="bg-gray-800 text-white rounded-lg px-2">
+                            {{ data.getDimension() }}</span>
+                    </div>
+                    <div class="text-2xl mb-2">Residents:</div>
+                    <ul>
+                        {% for resident in data.getResidents() %}
+                            <li><a href="{{ resident }}">{{ resident }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

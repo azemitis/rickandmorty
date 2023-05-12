@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Cache;
 use App\Models\CharacterObject;
 use App\Models\Episode;
+use App\Models\Location;
 use App\Views\View;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -26,10 +27,35 @@ class CharacterController
         $this->fetchMessage = 'Data from external API received.';
     }
 
+    public function getAllLocations(): array
+    {
+        $locations = [];
+
+        try {
+            for ($i = 1; $i <= 7; $i++) {
+                $url = 'https://rickandmortyapi.com/api/location?page=' . $i;
+                $response = $this->httpClient->request('GET', $url);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                $locationsData = $data['results'];
+
+                foreach ($locationsData as $locationData) {
+                    $locations[] = $locationData['name'];
+                }
+            }
+        } catch (GuzzleException $exception) {
+            // Add the exceptions
+        }
+
+        return $locations;
+    }
+
     public function home(array $vars, Environment $twig): View
     {
         try {
             $cacheKey = 'characters';
+
+            $locations = $this->getAllLocations();
 
             if (!Cache::has($cacheKey)) {
                 $url = 'https://rickandmortyapi.com/api/character/';
@@ -67,7 +93,11 @@ class CharacterController
                 $pagination['next_url'] = "/characters/$nextPage";
             }
 
-            return new View('Cards', ['characters' => $paginatedCharacters, 'pagination' => $pagination]);
+            return new View('Cards', [
+                'characters' => $paginatedCharacters,
+                'pagination' => $pagination,
+                'locations' => $locations,
+                ]);
         } catch (GuzzleException $exception) {
             $errorMessage = 'Error fetching character data.';
             return new View('Message', ['message' => $errorMessage]);
@@ -194,15 +224,38 @@ class CharacterController
         ]);
     }
 
-    public function locationJson(array $vars, Environment $twig): View
+    public function locationObject(array $vars, Environment $twig): View
     {
         $id = $vars['id'];
         $url = "https://rickandmortyapi.com/api/location/$id";
 
-        $response = $this->httpClient->request('GET', $url);
-        $locationData = json_decode($response->getBody()->getContents(), true);
+        $cacheKey = 'location_' . $id;
 
-        return new View('Json', ['data' => $locationData]);
+        if (!Cache::has($cacheKey)) {
+            try {
+                $response = $this->httpClient->request('GET', $url);
+                $locationData = json_decode($response->getBody()->getContents(), true);
+
+                $ID = $locationData['id'];
+                $name = $locationData['name'];
+                $type = $locationData['type'];
+                $dimension = $locationData['dimension'];
+                $residents = $locationData['residents'];
+
+                $location = new Location($ID, $name, $type, $dimension, $residents);
+
+                Cache::remember($cacheKey, $location, 15);
+
+                $this->fetchMessage = 'Data from external API received.';
+            } catch (RequestException $exception) {
+                $errorMessage = 'Error fetching location data.';
+                return new View('Message', ['message' => $errorMessage]);
+            }
+        } else {
+            $location = Cache::get($cacheKey);
+        }
+
+        return new View('Location', ['data' => $location]);
     }
 
     public function episodeObject(array $vars, Environment $twig): View
@@ -230,6 +283,6 @@ class CharacterController
 
         $episode = new Episode($ID, $name, $airDate, $episode, $characters);
 
-        return new View('EpisodeObject', ['data' => $episode]);
+        return new View('Episode', ['data' => $episode]);
     }
 }
