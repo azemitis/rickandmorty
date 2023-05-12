@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Cache;
-use App\Models\CharacterObject;
+use App\Models\Character;
 use App\Models\Episode;
 use App\Models\Location;
 use App\Views\View;
@@ -148,7 +148,7 @@ class HomeController
             $locationUrl = $characterData['location']['url'];
             $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
 
-            $characterObject = new CharacterObject(
+            $characterObject = new Character(
                 $characterData['id'],
                 $characterData['name'],
                 $characterData['status'],
@@ -227,7 +227,7 @@ class HomeController
 
                 $locationId = substr($locationUrl, strrpos($locationUrl, '/') + 1);
 
-                $characterObject = new CharacterObject(
+                $characterObject = new Character(
                     $characterData['id'],
                     $characterData['name'],
                     $characterData['status'],

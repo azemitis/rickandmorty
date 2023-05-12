@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class CharacterObject
+class Character
 {
     public int $id;
     public string $title;
