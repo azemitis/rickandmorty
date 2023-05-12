@@ -291,6 +291,49 @@ class HomeController
         return new View('Location', ['data' => $location]);
     }
 
+    public function filterLocations(array $vars, Environment $twig): View
+    {
+        $location = $_GET['location'];
+
+        try {
+            // Fetch all characters from all APIs
+            $characters = [];
+            for ($i = 1; $i <= 42; $i++) {
+                $url = 'https://rickandmortyapi.com/api/character?page=' . $i;
+                $response = $this->httpClient->request('GET', $url);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                $charactersData = $data['results'];
+
+                foreach ($charactersData as $characterData) {
+                    $characters[] = $characterData;
+                }
+            }
+
+            // Filter characters based on the selected location
+            $filteredCharacters = [];
+            foreach ($characters as $character) {
+                if ($character['location']['name'] === $location) {
+                    $filteredCharacters[] = $character;
+                }
+            }
+
+            $locations = $this->getAllLocations();
+            $episodes = $this->getAllEpisodes();
+
+            return new View('FilteredLocations', [
+                'characters' => $filteredCharacters,
+                'locations' => $locations,
+                'episodes' => $episodes,
+                'locationName' => $location
+            ]);
+        } catch (GuzzleException $exception) {
+            $errorMessage = 'Error fetching character data.';
+            return new View('Message', ['message' => $errorMessage]);
+        }
+    }
+
+
     public function episodeObject(array $vars, Environment $twig): View
     {
         $episodeId = $vars['id'];

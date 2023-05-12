@@ -8,4 +8,5 @@ return [
     ['GET', '/episode/{id}', ['App\Controllers\HomeController', 'episodeObject']],
     ['GET', '/search', ['App\Controllers\HomeController', 'searchCharacters']],
     ['GET', '/filterLocations', ['App\Controllers\HomeController', 'filterLocations']],
+    ['GET', '/filterEpisodes', ['App\Controllers\HomeController', 'filterEpisodes']],
     ];
