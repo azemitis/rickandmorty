@@ -21,7 +21,7 @@ class HomeController
         $this->httpClient = new Client();
     }
 
-//    Message if external API data is used
+//    Display message if external API data is used
     private function logFetchedData(array $data): void
     {
         $this->fetchMessage = 'Data from external API received.';
